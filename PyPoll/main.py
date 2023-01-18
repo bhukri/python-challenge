@@ -96,7 +96,7 @@ output_path = os.path.join(".", "analysis", "PyPoll_analysis.txt")
 
 #open the output file or create if it doesn't exist
 output_file=open(output_path,"w") 
-#write the analysis result to PyBank_analysis.txt
+#write the analysis result to PyPoll_analysis.txt
 output_file.writelines(analysis)  
 #close the txt file
 output_file.close() 
