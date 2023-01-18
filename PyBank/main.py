@@ -1,88 +1,100 @@
-
+#import the dependent modules
 import os
 import csv
 
-
-# Set path for file
+# Set path for the csv file 
 csvpath = os.path.join(".", "Resources", "budget_data.csv")
 
+#Read using the CSV module
 with open(csvpath, encoding='utf') as csvfile:
 
-    csvreader=csv.reader(csvfile, delimiter=',') #Specify delimiter and variable that holds contents
-    header=next(csvreader) #Read the header row first
+    #CSV reader specifies the delimiter and variable that holds contents
+    csvreader=csv.reader(csvfile, delimiter=',') 
+    #Read the header row since there is header 
+    header=next(csvreader) 
 
-    #Prepare variables
-    months=[] #Generate list named "months" for the "Date" column
-    prolosses=[] #Generate list named "prolosses" for the "Profit/Losses" column
+    #Lists to store data
+    months=[]  
+    profitloss=[]  
 
-    #Set start conditions
+    #initialize
     total=0
-    a_change=0
-    m_change=0
-    m_count=0
-    delta1=0
-    delta2=0
-    delta_line1=0
-    delta_line2=0
-    loop1=0
-    loop2=0
+    total_months=0
+    avg_change=0
+    monthly_change=0
 
-    #Read in each row of data after the header and write data into assigned lists
+    grt_inc=0
+    grt_dec=0
+    grt_inc_mon=0
+    grt_dec_mon=0
+
+    #Read in each row of data after the header and write data into the lists declared
     for row in csvreader:
-        month=row[0] #Assign column 0 as month
-        proloss=row[1] #Assign column 1 as proloss
-        months.append(month) #Add next line to list months
-        prolosses.append(proloss) #Add next line to list prolosses
+        #Assign column 0 as month
+        month=row[0] 
+        #Assign column 1 as profitloss
+        proloss=row[1] 
+        #Add/append each row to the months List
+        months.append(month) 
+        #Add/append each row to the profitloss list
+        profitloss.append(proloss) 
     
-    m_count = len(months) #Count the total of months in the "Date" column
-    #print(m_count)
+    #find the total months from the length of the list.
+    total_months = len(months) 
 
-    #Begin data analysis
+#Loop through each record to calculate the total amount
+for x in range (total_months):
+    total=total+int(profitloss[x])  
 
-#First loop is through list prolosses (variable loop1 as loop index counter)
-for loop1 in range (m_count):
-    total=total+int(prolosses[loop1]) #Calculate total amount
-#print(total)
+#Loop through each record to calculate the Profit/Losses details
+for y in range (total_months-1): 
+    #calculate average change in the Profit/Losses
+    avg_change=avg_change+(float(profitloss[y+1])-float(profitloss[y]))  
 
-#Second loop is through list prolosses (variable loop2 as loop index counter)
-for loop2 in range (m_count-1): #Restrict loop to avoid overflow (last line +1)
-    a_change=a_change+(float(prolosses[loop2+1])-float(prolosses[loop2])) #Calculate sum of changes
-#print(a_change/(m_count-1))
-    m_change=(float(prolosses[loop2+1])-float(prolosses[loop2])) #Calculate monthly change
-    if m_change>delta1: #Determine greatest increase
-        delta1=m_change
-        delta_line1=loop2
+    #Greatest Increase and Decrease in Profit/Losses 
+    #Calculate the monthly change in Profit/Losses
+    monthly_change=(float(profitloss[y+1])-float(profitloss[y])) 
+    
+    #check if monthly change is greater than the current Greatest increase stored
+    if monthly_change>grt_inc:
+        #set greatest increase with the monthly change
+        grt_inc=monthly_change
+        #set greatest increase month with the corresponding month
+        grt_inc_mon=y
     else:
-        delta1=delta1
+        #retain the current greatest increase amount
+        grt_inc=grt_inc
 
-#print(delta1)
-#print(months[delta_line1+1])
-
-    if m_change<delta2: #Determin greatest decrease
-        delta2=m_change
-        delta_line2=loop2
+    #check if monthly change is greater than the current Greatest decrease stored
+    if monthly_change<grt_dec:  
+        #set greatest decrease with the monthly change
+        grt_dec=monthly_change
+        #set greatest decrease month with the corresponding month
+        grt_dec_mon=y
     else:
-        delta2=delta2
+        #retain the current greatest decrease amount
+        grt_dec=grt_dec
 
-#print(delta2)
-#print(months[delta_line2+1])
-
-#generate output lines
-
+#print analysis output
 analysis=f'\
 Financial Analysis\n\
 ----------------------------\n\
-Total Months: {m_count}\n\
+Total Months: {total_months}\n\
 Total : ${total}\n\
-Average Change: ${round(a_change/(m_count-1),2)}\n\
-Greatest Increase in Profits: {months[delta_line1+1]} (${int(delta1)})\n\
-Greatest Decrease in Profits: {months[delta_line2+1]} (${int(delta2)})\n'
+Average Change: ${round(avg_change/(total_months-1),2)}\n\
+Greatest Increase in Profits: {months[grt_inc_mon+1]} (${int(grt_inc)})\n\
+Greatest Decrease in Profits: {months[grt_dec_mon+1]} (${int(grt_dec)})\n'
 
-print(analysis) #Output results on screen
+#print the analysis result to the terminal 
+print(analysis)
 
-#Write into text file named pybank.txt
+#Write the analysis result to the txt file
+#set the output file path and name
 output_path = os.path.join(".", "analysis", "PyBank_analysis.txt")
 
-file1=open(output_path,"w") #Open or if file does not exist then create file named pybank.txt
-file1.writelines(analysis) #Write analysis into pybank.txt
-file1.close() #Close pybank.txt write mode
+#open the output file or create if it doesn't exist
+output_file=open(output_path,"w") 
+#write the analysis result to PyBank_analysis.txt
+output_file.writelines(analysis)  
+#close the txt file
+output_file.close()  

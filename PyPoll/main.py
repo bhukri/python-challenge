@@ -1,101 +1,102 @@
+#import the dependent modules
 import os
 import csv
 
-# Set path for file
+# Set path for the csv file 
 csvpath = os.path.join(".", "Resources", "election_data.csv")
 
+#Read using the CSV module
 with open(csvpath, encoding='utf') as csvfile:
 
-    csvreader=csv.reader(csvfile, delimiter=',') #Specify delimiter and variable that holds contents
-    header=next(csvreader) #Read the header row first
+    #CSV reader specifies the delimiter and variable that holds contents
+    csvreader=csv.reader(csvfile, delimiter=',')  
+    #Read the header row since there is header 
+    header=next(csvreader) 
 
-    #Prepare variables
-    voterids=[] #Generate list named "voterids" for the "Voter ID" column
-    counties=[] #Generate list named "counties" for the "County" column
-    candidates=[] #Generate list named "candidates" for the "Candidate" column
-    candidatenames=[] #Generate list for actual candidate names
-    totaleachcan=[] #Generate list for total votes for each found candidate
-    resultprintcan=[] #Generate list for result printout of each found candidate
-    totaleachcanperc=[] #Generate list for percentage of votes for each found candidate
-
-    #Set start conditions
-    line_count=0
+    #Lists to store data
+    voterids=[]  
+    counties=[]  
+    candidates=[]
+    candidate_list=[] 
+    total_votes_can=[] 
+    can_vote_perc=[] 
+    results=[] 
+   
+    #initialize 
+    total_votes=0
+    total_candidates=0
     winnervotes=0
-    loservotes=0
-    loop1=0
-    loop2=0
-    loop3=0
-    loop4=0
     
-    #Read in each row of data after the header and write data into assigned lists
+    #Read in each row of data after the header and write data into the lists
     for row in csvreader:
-        voterid=row[0] #Assign column 0 as voterid
-        county=row[1] #Assign column 1 as county
-        candidate=row[2] #Assign column 2 as candidate
-        voterids.append(voterid) #Add next line to list voterids
-        counties.append(county) #Add next line to list counties
-        candidates.append(candidate) #Add next line to list candidates
+        #Assign column 0 as voterid
+        voterid=row[0] 
+        #Assign column 1 as county
+        county=row[1] 
+        #Assign column 2 as candidate
+        candidate=row[2] 
+        #Add/append each row to the voterid List
+        voterids.append(voterid)
+        ##Add/append each row to the county List  
+        counties.append(county)  
+        #Add/append each row to the candicates List
+        candidates.append(candidate) 
     
-    line_count= len(voterids) #Count the total number of votes cast in the "Voter ID" column
-    
-    #print(line_count)
+    #find the total number of votes from the length of the voter id list.
+    total_votes= len(voterids) 
 
-#Begin data analysis
+#Load the first record from the candidate list to the candidate list 
+candidate_list.append(candidates[0]) 
 
-candidatenames.append(candidates[0]) #Pre-loadfirst candidate name for comparison
+#Loop through to identify the unique candidate names
+for a in range (total_votes-1):
+    if candidates[a+1] != candidates[a] and candidates[a+1] not in candidate_list:
+        candidate_list.append(candidates[a+1])
 
-#First loop is through the list of candidates to determine candidates voted for (variable loop1 as loop index counter)
-for loop1 in range (line_count-1):
-    if candidates[loop1+1] != candidates[loop1] and candidates[loop1+1] not in candidatenames:
-        candidatenames.append(candidates[loop1+1])
+    #find the total number of candidates from the length of Candidate names list
+    total_candidates=len(candidate_list)
 
-n=len(candidatenames)
+#For the total no. of candidates loop through the list to calculate the total votes each candidate got using count fn
+for b in range (total_candidates): 
+    total_votes_can.append(candidates.count(candidate_list[b])) 
 
-#print(n)
+#Loop through to the total number of candidates to calculate the each candidates vote percentage 
+for x in range(total_candidates):  
+    #vote percentage calculation with rounding to 3 decimal points and append % to it
+    can_vote_perc.append(f'{round((total_votes_can[x]/total_votes*100), 3)}%') 
 
-#Second loop variable loop2 as loop index counter
-for loop2 in range (n): #Range of loop depending on how many candidates were found
-    totaleachcan.append(candidates.count(candidatenames[loop2])) #Count total votes of candidates and add to list total
+    #find the winner with the total votes count comparison
+    if total_votes_can[x]>winnervotes: 
+        winner=candidate_list[x]
+        winnervotes=total_votes_can[x]
 
-#print(candidatenames)
-#print(totaleachcan)
+# store the results list for each candidate with name, percentage votes and total votes
+for y in range(total_candidates):
+    results.append(f'{candidate_list[y]}: {can_vote_perc[y]} ({total_votes_can[y]})')  
+    #prepare the result in the block format for output
+    resultblock='\n'.join(results)  
 
-#Third loop variable loop3 as loop index counter
-
-loservotes=line_count #Pre-load loservoters with maximum votes for < comparison
-
-for loop3 in range(n): #Range of loop depending on how many candidates were found
-    totaleachcanperc.append(f'{round((totaleachcan[loop3]/line_count*100), 3)}%') #Calculate % per candidate found
-    if totaleachcan[loop3]>winnervotes: #Find candidate with highest vote count
-        winner=candidatenames[loop3]
-        winnervotes=totaleachcan[loop3]
-    if totaleachcan[loop3]<loservotes: #Find candidate with lowest vote count
-        loser=candidatenames[loop3]
-        loservotes=totaleachcan[loop3]
-
-#Fourth loop variable loop4 as loop index counter
-for loop4 in range(n):
-    resultprintcan.append(f'{candidatenames[loop4]}: {totaleachcanperc[loop4]} ({totaleachcan[loop4]})') #Format list resultprintcan
-
-resultlines='\n'.join(resultprintcan) #Prepare new combined list of results for printout (each candidate with the result gets a new line)
-
-#Generate output lines
-
+#print analysis output
 analysis=f'\
 Election Results\n\
 ----------------------------\n\
-Total Votes: {line_count}\n\
+Total Votes: {total_votes}\n\
 ----------------------------\n\
-{resultlines}\n\
+{resultblock}\n\
 ----------------------------\n\
 Winner: {winner} \n\
 ----------------------------\n'
 
-print(analysis) #Output results on screen
+#print the analysis result to the terminal 
+print(analysis) 
 
-#Write into text file named pypoll.txt
+#Write the analysis result to the txt file
+#set the output file path and name
 output_path = os.path.join(".", "analysis", "PyPoll_analysis.txt")
 
-file1=open(output_path,"w") #Open or if file does not exist then create file named pypoll.txt
-file1.writelines(analysis) #Write analysis into pypoll.txt
-file1.close() #Close pypoll.txt write mode
+#open the output file or create if it doesn't exist
+output_file=open(output_path,"w") 
+#write the analysis result to PyBank_analysis.txt
+output_file.writelines(analysis)  
+#close the txt file
+output_file.close() 
